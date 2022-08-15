@@ -15,6 +15,7 @@
 		086328FF28A6C5B4001207E5 /* Background.swift in Sources */ = {isa = PBXBuildFile; fileRef = 086328FE28A6C5B4001207E5 /* Background.swift */; };
 		0863290128A6CB62001207E5 /* EmojiArtViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0863290028A6CB61001207E5 /* EmojiArtViewModel.swift */; };
 		0863290328A6DD44001207E5 /* UtilityExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0863290228A6DD44001207E5 /* UtilityExtensions.swift */; };
+		08A72BFA28AB05CA000B9A89 /* UtilityViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08A72BF928AB05CA000B9A89 /* UtilityViews.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +28,7 @@
 		086328FE28A6C5B4001207E5 /* Background.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Background.swift; sourceTree = "<group>"; };
 		0863290028A6CB61001207E5 /* EmojiArtViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiArtViewModel.swift; sourceTree = "<group>"; };
 		0863290228A6DD44001207E5 /* UtilityExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilityExtensions.swift; sourceTree = "<group>"; };
+		08A72BF928AB05CA000B9A89 /* UtilityViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilityViews.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,6 +64,7 @@
 				0863290228A6DD44001207E5 /* UtilityExtensions.swift */,
 				086328EE28A6C4A3001207E5 /* EmojiArtAppApp.swift */,
 				086328F028A6C4A3001207E5 /* EmojiArtView.swift */,
+				08A72BF928AB05CA000B9A89 /* UtilityViews.swift */,
 				086328FC28A6C512001207E5 /* EmojiArt.swift */,
 				0863290028A6CB61001207E5 /* EmojiArtViewModel.swift */,
 				086328FE28A6C5B4001207E5 /* Background.swift */,
@@ -149,6 +152,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				08A72BFA28AB05CA000B9A89 /* UtilityViews.swift in Sources */,
 				086328FD28A6C513001207E5 /* EmojiArt.swift in Sources */,
 				086328F128A6C4A3001207E5 /* EmojiArtView.swift in Sources */,
 				0863290328A6DD44001207E5 /* UtilityExtensions.swift in Sources */,

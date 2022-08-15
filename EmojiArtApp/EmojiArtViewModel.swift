@@ -9,7 +9,13 @@ import Foundation
 import SwiftUI
 
 class EmojiArtViewModel: ObservableObject{
-    @Published var emojiArt:EmojiArt
+    @Published private(set) var emojiArt:EmojiArt {
+        didSet {
+            if emojiArt.background != oldValue.background {
+                fetchBackgroundImageDataIfNecessary()
+            }
+        }
+    }
     
     init() {
         emojiArt = EmojiArt()
@@ -23,7 +29,7 @@ class EmojiArtViewModel: ObservableObject{
         emojiArt.emojis
     }
     //get{} set{}????????
-    var background: Background {
+    var background: EmojiArt.Background {
         emojiArt.background
     }
 //    
@@ -31,12 +37,49 @@ class EmojiArtViewModel: ObservableObject{
 //        emojiChoices.map({String($0)})
 //    }
     //some intent
-    func addEmoji(text: String, at location: (x:Int, y: Int), size: Int){
-        emojiArt.addEmoji(text, at: location, size: size)
+    
+    
+    
+    // MARK: - Background
+    @Published var backgroundImage: UIImage?
+    var backgroundImageFetchStatus:BackgroundImageFetchStatus = .idle
+    
+    enum BackgroundImageFetchStatus {
+        case idle
+        case fetching
     }
     
-    func changeBackground(_ background: Background) {
-        emojiArt.changeBackground(background)
+    private func fetchBackgroundImageDataIfNecessary() {
+        backgroundImage = nil
+        switch emojiArt.background {
+        case .url(let url):
+            backgroundImageFetchStatus = .fetching
+            DispatchQueue.global(qos: .userInitiated).async {
+                let imageData = try? Data(contentsOf: url)
+                DispatchQueue.main.async { [weak self] in
+                    if self?.emojiArt.background == EmojiArt.Background.url(url) {
+                        self?.backgroundImageFetchStatus = .idle
+                        if imageData != nil {
+                            self?.backgroundImage = UIImage(data: imageData!)
+                        }
+                    }
+                    
+                }
+            }
+        case .blank:
+            break
+        case .imageData(let data):
+            backgroundImage = UIImage(data: data)
+        }
+    }
+    
+    func addEmoji(text: String, at location: (x:Int, y: Int), size: CGFloat){
+        emojiArt.addEmoji(text, at: location, size: Int(size))
+    }
+    
+    func setBackground(_ background: EmojiArt.Background) {
+        emojiArt.setBackground(background)
+        print("background changed to \(background)")
     }
     
     func scaleEmoji(_ emoji: EmojiArt.Emoji, by scale: CGFloat) {

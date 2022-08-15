@@ -10,6 +10,7 @@ import SwiftUI
 struct EmojiArtView: View {
     let emojiChoices: String = "😲😮‍💨👿👻🤖😻🤝👨‍🦱🧑‍🦱🧔🍏🍎🍉🍒🥝🥬🥕🫒🥐🧀🧇🦴🌯🍕"
     var zoomScale: CGFloat = 2
+    let defaultEmojiFontSize: CGFloat = 40
     
     @ObservedObject var document: EmojiArtViewModel
 
@@ -23,27 +24,44 @@ struct EmojiArtView: View {
     var emojisCanvas: some View {
         GeometryReader { geometry in
             ZStack{
-                Color.orange
+                Color.orange.overlay(OptionalImageView(uiImage: document.backgroundImage))
                 ForEach(document.emojis) { emoji in
                     Text(emoji.text)
                         .font(.system(size: fontSize(for: emoji)))
                         .position(position(for: emoji, in: geometry))
                 }
             }
-            .onDrop(of:[.plainText], isTargeted: nil) { providers, location in
+            .onDrop(of:[.plainText, .url, .image], isTargeted: nil) { providers, location in
                 drop(providers: providers, at: location, in: geometry)
-                
             }
         }
 
     }
     
     private func drop(providers:[NSItemProvider], at location: CGPoint, in geometry: GeometryProxy) -> Bool {
-        return providers.loadObjects(ofType: String.self) { string in
-            if let emoji = string.first, emoji.isEmoji {
-                document.addEmoji(text: String(emoji), at: convertToEmojiCoordinates(location, in: geometry), size: 32)
-            }
+        var found = providers.loadObjects(ofType: URL.self, using: {url in
+            document.setBackground(.url(url.imageURL))
+        })
+        if !found {
+            found = providers.loadObjects(ofType: UIImage.self, using: {image in
+                if let data = image.jpegData(compressionQuality: 1.0) {
+                    document.setBackground(.imageData(data))
+                }
+            })
         }
+        if !found {
+            found = providers.loadObjects(ofType: String.self, using: { string in
+                if let emoji = string.first, emoji.isEmoji {
+                    document.addEmoji(text: String(emoji), at: convertToEmojiCoordinates(location, in: geometry), size: defaultEmojiFontSize)
+                }
+            })
+        }
+        return found
+//        return providers.loadObjects(ofType: String.self) { string in
+//            if let emoji = string.first, emoji.isEmoji {
+//                document.addEmoji(text: String(emoji), at: convertToEmojiCoordinates(location, in: geometry), size: 32)
+//            }
+//        }
     }
     
     var pallete: some View {
@@ -60,7 +78,9 @@ struct EmojiArtView: View {
     private func position(for emoji:EmojiArt.Emoji, in geometry: GeometryProxy) -> CGPoint {
         convertFromEmojiCoordinates((emoji.x, emoji.y), in: geometry)
     }
-    
+    //EmojiCoordinate has geometry.frame(in: .local).center as origin
+    // x axis is pointing to right
+    // y axis is pointing downwards
     private func convertToEmojiCoordinates(_ location: CGPoint, in geometry: GeometryProxy) -> (x: Int, y: Int) {
         let center = geometry.frame(in: .local).center
         let location = CGPoint(

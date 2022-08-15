@@ -21,7 +21,7 @@ struct EmojiArt {
         emojis.append(Emoji(text: text, x:location.x, y: location.y, size: size, id:uniqueId))
     }
     
-    mutating func changeBackground(_ background: Background){
+    mutating func setBackground(_ background: Background){
         self.background = background
     }
     
