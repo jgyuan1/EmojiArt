@@ -38,6 +38,10 @@ class EmojiArtViewModel: ObservableObject{
 //    }
     //some intent
     
+    //MARK: - Select Emoji
+    
+    @Published var selectedEmoji: EmojiArt.Emoji? 
+    
     
     
     // MARK: - Background
