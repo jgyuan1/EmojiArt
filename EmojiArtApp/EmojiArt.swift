@@ -45,6 +45,10 @@ struct EmojiArt {
         mutating func changeSize(_ size: Int) {
             self.size = size
         }
+        mutating func shiftLocationBy(_ offset:(x: Int, y: Int)){
+            self.x += offset.x
+            self.y += offset.y
+        }
 
     }
 }
