@@ -11,17 +11,54 @@ import SwiftUI
 class EmojiArtViewModel: ObservableObject{
     @Published private(set) var emojiArt:EmojiArt {
         didSet {
+            autosave()
             if emojiArt.background != oldValue.background {
                 fetchBackgroundImageDataIfNecessary()
             }
         }
     }
     
+    func autosave() {
+        if let url = Autosave.url {
+            save(to: url)
+        }
+    }
+    
+    //save to documentDirectory
+    //the path to it is an URL
+    private struct Autosave {
+        static let filename = "Autosaved.emojiart"
+        static var url: URL? {
+            let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+            return documentDirectory?.appendingPathComponent(filename)
+        }
+        static let coalescingInterval = 5.0
+    }
+    
+    private func save(to url: URL){
+        let thisfunction = "\(String(describing: self)).\(#function)"
+        do {
+            if let data: Data = try emojiArt.json() {
+                print("\(thisfunction) json = \(String(data: data, encoding: .utf8) ?? "nil")")
+                try data.write(to: url)
+            }
+        } catch let encodingError where encodingError is EncodingError {
+            print("encodingError happens \(encodingError)")
+        } catch {
+            print("error happens during save")
+        }
+    }
+    
     init() {
-        emojiArt = EmojiArt()
-        emojiArt.addEmoji("🍏", at: (-200, -100), size: 80)
-        emojiArt.addEmoji("🍎", at: (300, 150), size: 80)
-        emojiArt.addEmoji("🫐", at: (0, 0), size: 80)
+        if let url = Autosave.url, let emojiArtFromURL = try? EmojiArt(url: url) {
+            emojiArt = emojiArtFromURL
+            fetchBackgroundImageDataIfNecessary()
+        } else {
+            emojiArt = EmojiArt()
+            emojiArt.addEmoji("🍏", at: (-200, -100), size: 80)
+            emojiArt.addEmoji("🍎", at: (300, 150), size: 80)
+            emojiArt.addEmoji("🫐", at: (0, 0), size: 80)
+        }
     }
 
     

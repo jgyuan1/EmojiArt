@@ -7,7 +7,7 @@
 
 import Foundation
 import SwiftUI
-struct EmojiArt {
+struct EmojiArt: Codable {
     var emojis:[Emoji] = []
     var background: Background = Background.blank
     
@@ -24,10 +24,22 @@ struct EmojiArt {
     mutating func setBackground(_ background: Background){
         self.background = background
     }
-    
 
     
-    struct Emoji: Identifiable, Hashable {
+
+    func json() throws -> Data?  {
+        try JSONEncoder().encode(self)
+    }
+    
+    init(json: Data) throws {
+        self = try JSONDecoder().decode(EmojiArt.self, from: json)
+    }
+    init(url: URL) throws {
+        let data = try Data(contentsOf: url)
+        self = try EmojiArt(json: data)
+    }
+    
+    struct Emoji: Identifiable, Hashable, Codable {
         var text: String
         var x: Int
         var y: Int
