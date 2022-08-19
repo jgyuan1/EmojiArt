@@ -19,6 +19,15 @@ extension CGRect {
         CGPoint(x: midX, y:midY)
     }
 }
+extension String {
+    var removingDuplicateCharacters: String {
+        reduce(into: "") { sofar, element in
+            if !sofar.contains(element) {
+                sofar.append(element)
+            }
+        }
+    }
+}
 
 extension Character {
     var isEmoji: Bool {

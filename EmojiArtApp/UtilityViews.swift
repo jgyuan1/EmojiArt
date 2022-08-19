@@ -16,3 +16,25 @@ struct OptionalImageView: View {
         }
     }
 }
+
+
+struct AnimatedActionButton: View {
+    var title: String? = nil
+    var systemImageName: String? = nil
+    var action: () -> Void
+    var body: some View {
+        //_ body: () throws -> Result) rethrows -> Result
+        //
+        Button(action: withAnimation {action}, label: {
+            // don't use return keyword in a ViewBuilder
+            if title != nil && systemImageName != nil {
+                Label(title!, systemImage: systemImageName!)
+            } else if title != nil {
+                Text(title!)
+            } else {
+                Image(systemName: systemImageName!)
+            }
+        })
+        
+    }
+}

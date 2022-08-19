@@ -15,14 +15,16 @@ struct EmojiArtView: View {
         steadyZoomScale * gestureZoomScale
     }
     let defaultEmojiFontSize: CGFloat = 40
-    
+    //a reference to an observableObject
+    // a reference to a source of truth
+    // never assign it sth
     @ObservedObject var document: EmojiArtViewModel
 
     var body: some View {
         VStack {
             emojisCanvas
             buttonToDeselectAndDisplayedInfoOfSelected
-            pallete
+            PaletteChooser()
         }
     }
     
@@ -225,20 +227,9 @@ struct EmojiArtView: View {
 //            }
 //        }
     }
+
     
-    var pallete: some View {
-        ScrollView(.horizontal) {
-            HStack {
-                ForEach(emojiChoices.map({String($0)}), id: \.self) { emojiString in
-                    Text(emojiString)
-                        .onDrag{NSItemProvider(object: emojiString as NSString)}
-                }
-            }
-        }
-    }
-    
-    
-    
+        
     private func position(for emoji:EmojiArt.Emoji, in geometry: GeometryProxy) -> CGPoint {
         if let selected = document.selectedEmoji, emoji.id == selected.id {
             let originOfDynamicShift = convertFromEmojiCoordinates((emoji.x, emoji.y), in: geometry)
