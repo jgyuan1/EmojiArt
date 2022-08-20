@@ -10,8 +10,14 @@ import Foundation
 
 
 class PaletteStore: ObservableObject {
-    var name: String
-    var palettes:Array<Palette> = []
+    let name: String
+    @Published var palettes:Array<Palette> = [] {
+        didSet {
+            saveToUserDefaults()
+        }
+    }
+    
+    
     
     init(name: String) {
         self.name = name
@@ -22,7 +28,7 @@ class PaletteStore: ObservableObject {
             insertPalette(named: "Vehicles", emojis: "🚙🚗🚘🚕🚖🏎🚚🛻🚛🚐🚓🚔🚑🚒🚀✈️🛫🛬🛩🚁🛸🚲🏍🛶⛵️🚤🛥🛳⛴🚢🚂🚝🚅🚆🚊🚉🚇🛺🚜")
             insertPalette(named: "Sports", emojis: "🏈⚾️🏀⚽️🎾🏐🥏🏓⛳️🥅🥌🏂⛷🎳")
             insertPalette(named: "Music", emojis: "🎼🎤🎹🪘🥁🎺🪗🪕🎻")
-            insertPalette(named: "Animals", emojis: "🐥🐣🐂🐄🐎🐖🐏🐑🦙🐐🐓🐁🐀🐒🦆🦅🦉🦇🐢🐍🦎🦖🦕🐅🐆🦓🦍🦧🦣🐘🦛🦏🐪🐫🦒🦘🦬🐃🦙🐐🦌🐕🐩🦮🐈🦤🦢🦩🕊🦝🦨🦡🦫🦦🦥🐿🦔")
+            insertPalette(named: "Animals", emojis: "🐥🐣🐂🐄🐎🐖🐏🐑🐓🐁🐀🐒🦆🦅🦉🦇🐢🐍🦎🦖🦕🐅🐆🦓🦍🦧🦣🐘🦛🦏🐪🐫🦒🦘🦬🐃🦙🐐🦌🐕🐩🦮🐈🦤🦢🦩🕊🦝🦨🦡🦫🦦🦥🐿🦔")
             insertPalette(named: "Animal Faces", emojis: "🐵🙈🙊🙉🐶🐱🐭🐹🐰🦊🐻🐼🐻‍❄️🐨🐯🦁🐮🐷🐸🐲")
             insertPalette(named: "Flora", emojis: "🌲🌴🌿☘️🍀🍁🍄🌾💐🌷🌹🥀🌺🌸🌼🌻")
             insertPalette(named: "Weather", emojis: "☀️🌤⛅️🌥☁️🌦🌧⛈🌩🌨❄️💨☔️💧💦🌊☂️🌫🌪")
@@ -50,7 +56,7 @@ class PaletteStore: ObservableObject {
         return nil
     }
     
-    
+    //MARK: -- Intent to delete or add a new palette
     private var uniqueIdForPallet:Int = 0
     
     func insertPalette(named name: String, emojis: String) {
@@ -58,16 +64,34 @@ class PaletteStore: ObservableObject {
         palettes.append(Palette(name: name, emojis: emojis, id: uniqueIdForPallet))
     }
     
+    func deletePaletteAt(_ index: Int) {
+        palettes.remove(at: index)
+    }
+    
+    
+    
     //MARK: -- Intent
     
     func addEmojis(_ emojis: String, to palette: Palette) {
         var chosenPalette = palettes.first(where: {$0.id == palette.id})
         if chosenPalette != nil {
-            chosenPalette!.addEmojis(emojis)
+            chosenPalette!.emojis = ("" + emojis + palette.emojis).filter({$0.isEmoji}).removingDuplicateCharacters
+            print("palette " + palette.name + ":" + chosenPalette!.emojis + "ADD")
         }
     }
     
-    struct Palette: Identifiable, Codable {
+    func deleteEmoji(_ emoji: String, from palette: Palette) {
+        var chosenPalette = palettes.first(where: {$0.id == palette.id})
+        // Palette is a struct, it's immutable, it will get a new copy of itself when something in it changes
+        // ViewModel is the only source of true, and always mutate things within it
+//        chosenPalette!.deleteEmoji(emoji)
+        if chosenPalette != nil {
+            chosenPalette!.emojis = palette.emojis.filter({String($0) != emoji})
+            print("palette " + palette.name + ":" + chosenPalette!.emojis + "DELETE")
+        }
+    }
+    
+    struct Palette: Identifiable, Codable, Hashable {
         var name:String
         var emojis:String
         let id:Int
@@ -78,8 +102,14 @@ class PaletteStore: ObservableObject {
         }
         
         mutating func addEmojis(_ emojisToAdd: String) {
-            
+
             emojis = ("" + emojisToAdd + emojis).filter({$0.isEmoji}).removingDuplicateCharacters
+        }
+
+        //when binding a palette to PaletteEditor, you actually need to CRUD palette directly by these mutating method
+        mutating func deleteEmoji(_ emoji: String) {
+            emojis = emojis.filter({String($0) != emoji})
+            print("delete emoji" + emoji + "from PaletteStore")
         }
     }
 

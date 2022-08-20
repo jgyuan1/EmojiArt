@@ -64,6 +64,7 @@ struct EmojiArtView: View {
 //                        .opacity(((emoji.id) == (document.selectedEmoji.id)) ? 0.5 : 1 )
                 }
             }
+            .clipped()
             .onDrop(of:[.plainText, .url, .image], isTargeted: nil) { providers, location in
                 drop(providers: providers, at: location, in: geometry)
             }

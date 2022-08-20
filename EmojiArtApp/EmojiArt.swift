@@ -53,7 +53,9 @@ struct EmojiArt: Codable {
             self.size = size
             self.id = id
         }
-        
+        // this function actually is useless
+        // use " emojiArt.emojis[index].size = 0000 " to change size of Emoji
+        // This will construct a new Emoji
         mutating func changeSize(_ size: Int) {
             self.size = size
         }

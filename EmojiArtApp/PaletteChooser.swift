@@ -18,23 +18,34 @@ struct PaletteChooser: View {
         }
     }
     func body(of palette: PaletteStore.Palette) -> some View {
-        ScrollView(.horizontal) {
-            HStack {
-                ForEach(paletteStore.palettes[chosenIndexOfPalettes].emojis.map({String($0)}), id: \.self) { emojiString in
-                    Text(emojiString)
-                        .onDrag{NSItemProvider(object: emojiString as NSString)}
+        HStack {
+            Text(palette.name)
+            ScrollView(.horizontal) {
+                HStack {
+                    ForEach(paletteStore.palettes[chosenIndexOfPalettes].emojis.map({String($0)}), id: \.self) { emojiString in
+                        Text(emojiString)
+                            .onDrag{NSItemProvider(object: emojiString as NSString)}
+                    }
                 }
             }
-            .popover(item: $paletteToEdit, content: { palette in
-                PaletteEditor(paletteToEdit: $paletteStore.palettes.first(where: {
-                $0.id == palette.id})! )} )
         }
+        .id(palette.id)
+        .transition(AnyTransition.scale)
+        .popover(item: $paletteToEdit, content: { palette in
+            PaletteEditor(paletteToEdit: $paletteStore.palettes.first(where: {
+            $0.id == palette.id})! )} )
+
     }
     
     var menuButtonForEdit: some View {
-        Button(action: {chosenIndexOfPalettes = (chosenIndexOfPalettes+1) % paletteStore.palettes.count} , label: {Image(systemName: "paintpalette") })
+        Button(action: {
+            withAnimation {
+                chosenIndexOfPalettes = (chosenIndexOfPalettes+1) % paletteStore.palettes.count
+            }
+        } , label: {
+            Image(systemName: "paintpalette")
+        })
             .contextMenu(menuItems: {multiButtons})
-            
     }
     
     @ViewBuilder
@@ -43,10 +54,10 @@ struct PaletteChooser: View {
             paletteToEdit = paletteStore.palettes[chosenIndexOfPalettes]
         }
         AnimatedActionButton(title: "Delete", systemImageName: "minus.circle") {
-            paletteToEdit = paletteStore.palettes[chosenIndexOfPalettes]
+            paletteStore.deletePaletteAt(chosenIndexOfPalettes)
         }
         AnimatedActionButton(title: "New", systemImageName: "plus") {
-            paletteToEdit = paletteStore.palettes[chosenIndexOfPalettes]
+            paletteStore.insertPalette(named: "New", emojis: "")
         }
     }
 }
