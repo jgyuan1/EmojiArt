@@ -10,11 +10,13 @@ import SwiftUI
 struct PaletteChooser: View {
     @State var chosenIndexOfPalettes: Int = 0
     @State var paletteToEdit: PaletteStore.Palette?
+    @State var managing:Bool = false
     @EnvironmentObject var paletteStore: PaletteStore
     var body: some View {
         HStack {
             menuButtonForEdit
             body(of: paletteStore.palettes[chosenIndexOfPalettes])
+            
         }
     }
     func body(of palette: PaletteStore.Palette) -> some View {
@@ -34,6 +36,7 @@ struct PaletteChooser: View {
         .popover(item: $paletteToEdit, content: { palette in
             PaletteEditor(paletteToEdit: $paletteStore.palettes.first(where: {
             $0.id == palette.id})! )} )
+        .sheet(isPresented: $managing, content: {PaletteManager()})
 
     }
     
@@ -59,6 +62,26 @@ struct PaletteChooser: View {
         AnimatedActionButton(title: "New", systemImageName: "plus") {
             paletteStore.insertPalette(named: "New", emojis: "")
         }
+        AnimatedActionButton(title: "Manager", systemImageName: "slider.vertical.3") {
+            managing = true
+        }
+        gotoMenu
     }
+    
+    var gotoMenu: some View {
+        //Menu has a greater than sign on the left
+        Menu {
+            ForEach (paletteStore.palettes) { palette in
+                AnimatedActionButton(title: palette.name) {
+                    if let index = paletteStore.palettes.index(matching: palette) {
+                        chosenIndexOfPalettes = index
+                    }
+                }
+            }
+        } label: {
+            Label("Go To", systemImage: "text.insert")
+        }
+    }
+    
 }
 
