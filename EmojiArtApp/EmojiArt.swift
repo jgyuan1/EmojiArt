@@ -27,7 +27,7 @@ struct EmojiArt: Codable {
 
     
 
-    func json() throws -> Data?  {
+    func json() throws -> Data  {
         try JSONEncoder().encode(self)
     }
     

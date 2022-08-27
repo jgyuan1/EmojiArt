@@ -9,7 +9,8 @@ import SwiftUI
 
 struct EmojiArtView: View {
     let emojiChoices: String = "😲😮‍💨👿👻🤖😻🤝👨‍🦱🧑‍🦱🧔🍏🍎🍉🍒🥝🥬🥕🫒🥐🧀🧇🦴🌯🍕"
-    @State private var steadyZoomScale: CGFloat = 1
+    @SceneStorage("EmojiArtView.steadyZoomScale")
+    private var steadyZoomScale: CGFloat = 1
     @GestureState private var gestureZoomScale: CGFloat = 1
     private var dynamicZoomScale:CGFloat {
         steadyZoomScale * gestureZoomScale
@@ -19,6 +20,8 @@ struct EmojiArtView: View {
     // a reference to a source of truth
     // never assign it sth
     @ObservedObject var document: EmojiArtViewModel
+    
+    @Environment(\.undoManager) var undoManager
 
     var body: some View {
         VStack {
@@ -71,6 +74,12 @@ struct EmojiArtView: View {
             //don't use two gestures chaining together
             .gesture(zoomGesture().simultaneously(with: dragGestureToShift()))
 //            .simultaneousGesture(doubleTapToZoom(in: geometry))
+            .toolbar {
+                UndoButton(
+                    undo: undoManager?.optionalUndoMenuItemTitle,
+                    redo: undoManager?.optionalRedoMenuItemTitle
+                )
+            }
         }
 
     }
@@ -146,7 +155,9 @@ struct EmojiArtView: View {
     
     //MARK: -shift
     // in the non-scaleEffect mode what CGSize backgroundImage has shifted
-    @State private var steadyOffset: CGSize = CGSize.zero
+    // SceneStorage must implement RawPresentation
+    @SceneStorage("EmojiArtView.steadyOffset")
+    private var steadyOffset: CGSize = CGSize.zero
     // kind of a read only var
     @GestureState private var gestureOffset: CGSize = .zero
     @GestureState private var gestureOffsetForEmoji: CGSize = .zero
@@ -163,7 +174,7 @@ struct EmojiArtView: View {
                     gestureOffsetForEmoji = latestGestureOffset.translation
                 }
                 .onEnded { finalGestureOffset in
-                    document.shiftLocationForEmoji(emoji, by: finalGestureOffset.translation, scale: steadyZoomScale)
+                    document.shiftLocationForEmoji(emoji, by: finalGestureOffset.translation, scale: steadyZoomScale, with: undoManager)
 //                    steadyOffset.height += finalGestureOffset.translation.height
 //                    steadyOffset.width += finalGestureOffset.translation.width
                 }
@@ -190,7 +201,7 @@ struct EmojiArtView: View {
                     gestureZoomScaleForEmoji = latestGestureScale
                 })
                 .onEnded({gestureScaleAtEnd in
-                    document.scaleEmoji(emoji, by: gestureScaleAtEnd)
+                    document.scaleEmoji(emoji, by: gestureScaleAtEnd, with: undoManager)
                 })
         } else {
             return MagnificationGesture()
@@ -205,19 +216,19 @@ struct EmojiArtView: View {
     
     private func drop(providers:[NSItemProvider], at location: CGPoint, in geometry: GeometryProxy) -> Bool {
         var found = providers.loadObjects(ofType: URL.self, using: {url in
-            document.setBackground(.url(url.imageURL))
+            document.setBackground(.url(url.imageURL), with: undoManager)
         })
         if !found {
             found = providers.loadObjects(ofType: UIImage.self, using: {image in
                 if let data = image.jpegData(compressionQuality: 1.0) {
-                    document.setBackground(.imageData(data))
+                    document.setBackground(.imageData(data), with: undoManager)
                 }
             })
         }
         if !found {
             found = providers.loadObjects(ofType: String.self, using: { string in
                 if let emoji = string.first, emoji.isEmoji {
-                    document.addEmoji(text: String(emoji), at: convertToEmojiCoordinates(location, in: geometry), size: defaultEmojiFontSize)
+                    document.addEmoji(text: String(emoji), at: convertToEmojiCoordinates(location, in: geometry), size: defaultEmojiFontSize, with: undoManager)
                 }
             })
         }
